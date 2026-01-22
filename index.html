@@ -175,9 +175,34 @@
         }
         
         const feet = Math.floor(input);
-        const inches = (input - feet) * 12;
+        const totalInches = (input - feet) * 12;
+        const wholeInches = Math.floor(totalInches);
+        const fraction = totalInches - wholeInches;
         
-        result.textContent = feet + "' " + inches.toFixed(1) + '"';
+        // Convert to 16ths and round
+        const sixteenths = Math.round(fraction * 16);
+        
+        // Simplify fraction
+        let fractionStr = '';
+        if (sixteenths > 0 && sixteenths < 16) {
+            let num = sixteenths;
+            let den = 16;
+            // Find GCD to simplify
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            const g = gcd(num, den);
+            num = num / g;
+            den = den / g;
+            fractionStr = ' ' + num + '/' + den;
+        }
+        
+        // Handle case where sixteenths rounds to 16 (add an inch)
+        let finalInches = wholeInches;
+        if (sixteenths === 16) {
+            finalInches++;
+            fractionStr = '';
+        }
+        
+        result.textContent = feet + "' " + finalInches + fractionStr + '"';
     }
 
     function calculate() {
@@ -232,3 +257,5 @@
 
 </body>
 </html>
+
+
