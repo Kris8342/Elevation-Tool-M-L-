@@ -5,8 +5,11 @@
     <title>Basement Elevation Check Tool (Tenths)</title>
     <style>
         body            {font-family:Arial,sans-serif;margin:20px;line-height:1.6}
-        .form-container {max-width:600px;margin:0 auto;padding:20px;
+        .page-container {max-width:900px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap}
+        .form-container {flex:1;min-width:320px;padding:20px;
                          border:1px solid #ccc;border-radius:5px;background:#f9f9f9}
+        .reference-container {width:200px;padding:15px;
+                         border:1px solid #ccc;border-radius:5px;background:#f0f7ff}
         .header         {text-align:center;margin-bottom:30px}
         .input-group    {margin-bottom:15px;display:flex;align-items:center;flex-wrap:wrap}
         .input-field    {border:none;border-bottom:1px solid #333;background:transparent;
@@ -25,131 +28,207 @@
         .instructions   {background:#fff3cd;border:1px solid #ffeaa7;padding:10px;
                          border-radius:5px;margin:10px 0;font-style:italic}
         .two-column     {display:grid;grid-template-columns:1fr 1fr;gap:15px}
-        @media (max-width:600px){.two-column{grid-template-columns:1fr}}
+        @media (max-width:700px){
+            .two-column{grid-template-columns:1fr}
+            .page-container{flex-direction:column}
+            .reference-container{width:100%}
+        }
         @media print    {.no-print{display:none}body{margin:0}.form-container{border:none;padding:0}}
         .result-value   {font-size:24px;color:#2e7d32}
+        
+        /* Reference table styles */
+        .ref-title      {font-size:16px;font-weight:bold;text-align:center;margin-bottom:10px;
+                         color:#1565c0;border-bottom:2px solid #1565c0;padding-bottom:5px}
+        .ref-table      {width:100%;border-collapse:collapse;font-size:14px}
+        .ref-table th   {background:#1565c0;color:#fff;padding:6px 4px;text-align:center}
+        .ref-table td   {padding:5px 4px;text-align:center;border-bottom:1px solid #ddd}
+        .ref-table tr:nth-child(even) {background:#e3f2fd}
+        .ref-table tr:hover {background:#bbdefb}
+        .ref-note       {font-size:11px;color:#666;margin-top:10px;text-align:center;font-style:italic}
     </style>
 </head>
 <body>
-<div class="form-container">
+<div class="page-container">
 
-    <div class="header">
-        <h1 style="margin:0;">Basement Elevation Tool</h1>
-        <p style="margin:5px 0;color:#666;">Grade Rod in Tenths (Decimal Feet)</p>
+    <div class="form-container">
+        <div class="header">
+            <h1 style="margin:0;">Basement Elevation Tool</h1>
+            <p style="margin:5px 0;color:#666;">Grade Rod in Tenths (Decimal Feet)</p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Basement Footer Calculation</div>
+            
+            <div class="instructions">
+                Enter your current elevation point, grade rod reading (in tenths), and slab elevation. 
+                The tool will calculate where to set your grade rod.
+            </div>
+
+            <div class="input-group">
+                <label for="current-elevation">Current Elevation Point:</label>
+                <input id="current-elevation" class="input-field" type="number" step="0.01" placeholder="e.g., 814.70">
+                <span style="margin-left:5px;">ft</span>
+            </div>
+
+            <div class="input-group">
+                <label for="grade-rod">Current Grade Rod Reading:</label>
+                <input id="grade-rod" class="input-field" type="number" step="0.01" placeholder="e.g., 5.42">
+                <span style="margin-left:5px;">ft (tenths)</span>
+            </div>
+
+            <div class="input-group">
+                <label for="slab-elevation">Slab Elevation:</label>
+                <input id="slab-elevation" class="input-field" type="number" step="0.01" placeholder="e.g., 803.56">
+                <span style="margin-left:5px;">ft</span>
+            </div>
+
+            <button class="calc-button" onclick="calculate()">Calculate</button>
+
+            <div id="results" style="display:none;">
+                <div class="two-column">
+                    <div class="result-box">
+                        <div>Elevation Difference:</div>
+                        <div id="difference" class="result-value">-</div>
+                    </div>
+                    <div class="result-box">
+                        <div>Set Grade Rod To:</div>
+                        <div id="grade-rod-setting" class="result-value">-</div>
+                    </div>
+                </div>
+                <div class="two-column">
+                    <div class="result-box" style="background:#e3f2fd;border-color:#2196F3;">
+                        <div>Height of Instrument (HI):</div>
+                        <div id="hi-value" class="result-value" style="color:#1565c0;">-</div>
+                    </div>
+                    <div class="result-box" style="background:#fff3e0;border-color:#ff9800;">
+                        <div>Sub Grade (1ft lower):</div>
+                        <div id="sub-grade" class="result-value" style="color:#e65100;">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="error-message" class="error-box" style="display:none;"></div>
     </div>
 
-    <div class="section">
-        <div class="section-title">Basement Footer Calculation</div>
+    <!-- TENTHS REFERENCE -->
+    <div class="reference-container">
+        <div class="ref-title">Tenths ↔ Inches</div>
+        <table class="ref-table">
+            <thead>
+                <tr>
+                    <th>Tenths</th>
+                    <th>Inches</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>.08</td><td>1"</td></tr>
+                <tr><td>.17</td><td>2"</td></tr>
+                <tr><td>.25</td><td>3"</td></tr>
+                <tr><td>.33</td><td>4"</td></tr>
+                <tr><td>.42</td><td>5"</td></tr>
+                <tr><td>.50</td><td>6"</td></tr>
+                <tr><td>.58</td><td>7"</td></tr>
+                <tr><td>.67</td><td>8"</td></tr>
+                <tr><td>.75</td><td>9"</td></tr>
+                <tr><td>.83</td><td>10"</td></tr>
+                <tr><td>.92</td><td>11"</td></tr>
+                <tr><td>1.00</td><td>12"</td></tr>
+            </tbody>
+        </table>
+        <div class="ref-note">1 inch = 0.0833 ft<br>Tenths = Inches ÷ 12</div>
         
-        <div class="instructions">
-            Enter your current elevation point, grade rod reading (in tenths), and slab elevation. 
-            The tool will calculate where to set your grade rod.
-        </div>
-
-        <div class="input-group">
-            <label for="current-elevation">Current Elevation Point:</label>
-            <input id="current-elevation" class="input-field" type="number" step="0.01" placeholder="e.g., 814.70">
-            <span style="margin-left:5px;">ft</span>
-        </div>
-
-        <div class="input-group">
-            <label for="grade-rod">Current Grade Rod Reading:</label>
-            <input id="grade-rod" class="input-field" type="number" step="0.01" placeholder="e.g., 5.42">
-            <span style="margin-left:5px;">ft (tenths)</span>
-        </div>
-
-        <div class="input-group">
-            <label for="slab-elevation">Slab Elevation:</label>
-            <input id="slab-elevation" class="input-field" type="number" step="0.01" placeholder="e.g., 803.56">
-            <span style="margin-left:5px;">ft</span>
-        </div>
-
-        <button class="calc-button" onclick="calculate()">Calculate</button>
-
-        <div id="results" style="display:none;">
-            <div class="two-column">
-                <div class="result-box">
-                    <div>Elevation Difference:</div>
-                    <div id="difference" class="result-value">-</div>
-                </div>
-                <div class="result-box">
-                    <div>Set Grade Rod To:</div>
-                    <div id="grade-rod-setting" class="result-value">-</div>
-                </div>
-            </div>
-            <div class="two-column">
-                <div class="result-box" style="background:#e3f2fd;border-color:#2196F3;">
-                    <div>Slab Height:</div>
-                    <div id="slab-height" class="result-value" style="color:#1565c0;">-</div>
-                </div>
-                <div class="result-box" style="background:#fff3e0;border-color:#ff9800;">
-                    <div>Sub Grade (1ft lower):</div>
-                    <div id="sub-grade" class="result-value" style="color:#e65100;">-</div>
+        <!-- Quick Converter -->
+        <div style="margin-top:20px;padding-top:15px;border-top:2px solid #1565c0;">
+            <div class="ref-title" style="margin-top:0;">Quick Convert</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <input id="decimal-input" type="number" step="0.01" placeholder="e.g., 16.56" 
+                       style="width:100%;padding:8px;border:1px solid #1565c0;border-radius:4px;font-size:14px;"
+                       oninput="convertDecimal()">
+                <div id="convert-result" style="background:#fff;padding:10px;border-radius:4px;text-align:center;font-weight:bold;font-size:16px;min-height:20px;">
+                    —
                 </div>
             </div>
         </div>
     </div>
-
-    <div id="error-message" class="error-box" style="display:none;"></div>
-
-    <script>
-        function showError(message) {
-            const errorBox = document.getElementById('error-message');
-            errorBox.textContent = message;
-            errorBox.style.display = 'block';
-        }
-
-        function hideError() {
-            document.getElementById('error-message').style.display = 'none';
-        }
-
-        function calculate() {
-            hideError();
-            
-            const currentElevation = parseFloat(document.getElementById('current-elevation').value);
-            const slabElevation = parseFloat(document.getElementById('slab-elevation').value);
-            const currentGradeRod = parseFloat(document.getElementById('grade-rod').value);
-            
-            if (isNaN(currentElevation) || isNaN(slabElevation)) {
-                showError('Please enter valid elevation values');
-                return;
-            }
-            
-            if (isNaN(currentGradeRod)) {
-                showError('Please enter a valid grade rod reading');
-                return;
-            }
-            
-            // Calculate difference (current elevation - slab elevation)
-            const difference = currentElevation - slabElevation;
-            
-            // Calculate new grade rod setting
-            const newGradeRod = currentGradeRod + difference;
-            
-            // Display results in tenths (2 decimal places)
-            document.getElementById('difference').textContent = difference.toFixed(2) + ' ft';
-            document.getElementById('grade-rod-setting').textContent = newGradeRod.toFixed(2) + ' ft';
-            document.getElementById('slab-height').textContent = newGradeRod.toFixed(2) + ' ft';
-            document.getElementById('sub-grade').textContent = (newGradeRod + 1).toFixed(2) + ' ft';
-            
-            document.getElementById('results').style.display = 'block';
-        }
-
-        // Enter key navigation
-        document.addEventListener('keydown', e => {
-            if(e.key === 'Enter'){
-                e.preventDefault();
-                const inputs = [...document.querySelectorAll('input')];
-                const idx = inputs.indexOf(document.activeElement);
-                if(idx !== -1 && idx < inputs.length - 1) {
-                    inputs[idx + 1].focus();
-                } else {
-                    calculate();
-                }
-            }
-        });
-    </script>
 
 </div>
+
+<script>
+    function showError(message) {
+        const errorBox = document.getElementById('error-message');
+        errorBox.textContent = message;
+        errorBox.style.display = 'block';
+    }
+
+    function hideError() {
+        document.getElementById('error-message').style.display = 'none';
+    }
+
+    function convertDecimal() {
+        const input = parseFloat(document.getElementById('decimal-input').value);
+        const result = document.getElementById('convert-result');
+        
+        if (isNaN(input)) {
+            result.textContent = '—';
+            return;
+        }
+        
+        const feet = Math.floor(input);
+        const inches = (input - feet) * 12;
+        
+        result.textContent = feet + "' " + inches.toFixed(1) + '"';
+    }
+
+    function calculate() {
+        hideError();
+        
+        const currentElevation = parseFloat(document.getElementById('current-elevation').value);
+        const slabElevation = parseFloat(document.getElementById('slab-elevation').value);
+        const currentGradeRod = parseFloat(document.getElementById('grade-rod').value);
+        
+        if (isNaN(currentElevation) || isNaN(slabElevation)) {
+            showError('Please enter valid elevation values');
+            return;
+        }
+        
+        if (isNaN(currentGradeRod)) {
+            showError('Please enter a valid grade rod reading');
+            return;
+        }
+        
+        // Calculate Height of Instrument
+        const hi = currentElevation + currentGradeRod;
+        
+        // Calculate difference (current elevation - slab elevation)
+        const difference = currentElevation - slabElevation;
+        
+        // Calculate new grade rod setting
+        const newGradeRod = currentGradeRod + difference;
+        
+        // Display results in tenths (2 decimal places)
+        document.getElementById('difference').textContent = difference.toFixed(2) + ' ft';
+        document.getElementById('grade-rod-setting').textContent = newGradeRod.toFixed(2) + ' ft';
+        document.getElementById('hi-value').textContent = hi.toFixed(2) + ' ft';
+        document.getElementById('sub-grade').textContent = (newGradeRod + 1).toFixed(2) + ' ft';
+        
+        document.getElementById('results').style.display = 'block';
+    }
+
+    // Enter key navigation
+    document.addEventListener('keydown', e => {
+        if(e.key === 'Enter'){
+            e.preventDefault();
+            const inputs = [...document.querySelectorAll('input')];
+            const idx = inputs.indexOf(document.activeElement);
+            if(idx !== -1 && idx < inputs.length - 1) {
+                inputs[idx + 1].focus();
+            } else {
+                calculate();
+            }
+        }
+    });
+</script>
+
 </body>
 </html>
